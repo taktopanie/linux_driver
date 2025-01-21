@@ -241,7 +241,8 @@ struct file_operations pcd_fops=
 /*Called when the device is removed from the system */
 int pcd_platform_driver_remove(struct platform_device *pdev)
 {
-
+	pr_info("A device is removed\n");
+#if 0
 	struct pcdev_private_data  *dev_data = dev_get_drvdata(&pdev->dev);
 
 	/*1. Remove a device that was created with device_create() */
@@ -253,13 +254,16 @@ int pcd_platform_driver_remove(struct platform_device *pdev)
 	pcdrv_data.total_devices--;
 
 	pr_info("A device is removed\n");
-
+#endif
 	return 0;
 }
 
 /*Called when matched platform device is found */
 int pcd_platform_driver_probe(struct platform_device *pdev)
 {
+	
+	pr_info("Probe was successful\n");
+#if 0
 	int ret;
 
 	struct pcdev_private_data *dev_data;
@@ -329,8 +333,9 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
 	}
 
 	pcdrv_data.total_devices++;
-
 	pr_info("Probe was successful\n");
+#endif
+	
 
 	return 0;
 
@@ -345,13 +350,23 @@ struct platform_device_id pcdevs_ids[] =
 	{ } /*Null termination */
 };
 
+struct of_device_id pcdev_of_match_table[] =
+{
+	[0] = {.compatible = "pcdev-A1x",.data = (void*) PCDEVA1X},
+	[1] = {.compatible = "pcdev-B1x",.data = (void*) PCDEVB1X},
+	[2] = {.compatible = "pcdev-C1x",.data = (void*) PCDEVC1X},
+	[3] = {.compatible = "pcdev-D1x",.data = (void*) PCDEVD1X},
+	{ } /*Null termination */
+};
+
 struct platform_driver pcd_platform_driver = 
 {
 	.probe = pcd_platform_driver_probe,
 	.remove = pcd_platform_driver_remove,
 	.id_table = pcdevs_ids,
 	.driver = {
-		.name = "pseudo-char-device"
+		.name = "pseudo-char-device",
+		.of_match_table = pcdev_of_match_table
 	}
 
 };
@@ -370,7 +385,8 @@ static int __init pcd_platform_driver_init(void)
 	}
 
 	/*Create device class under /sys/class */
-	pcdrv_data.class_pcd = class_create(THIS_MODULE,"pcd_class");
+	//pcdrv_data.class_pcd = class_create(THIS_MODULE,"pcd_class");
+	pcdrv_data.class_pcd = class_create("pcd_class");
 	if(IS_ERR(pcdrv_data.class_pcd)){
 		pr_err("Class creation failed\n");
 		ret = PTR_ERR(pcdrv_data.class_pcd);
