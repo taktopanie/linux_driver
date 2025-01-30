@@ -51,6 +51,12 @@ const struct file_operations my_def_f_ops = {
         return sprintf(buf, "HELLO FROM THE ATTRIBUTE\n");
     }
 
+    ssize_t my_show_serial(struct device *dev, struct device_attribute *attr, char *buf)
+    {
+        /*just print string*/
+        return sprintf(buf, "AXF123\n");
+    }
+
 
 	ssize_t my_store_attr(struct device *dev, struct device_attribute *attr,const char *buf, size_t count)
     {
@@ -69,12 +75,12 @@ const struct file_operations my_def_f_ops = {
         return count;
     }
 
-    /*
-    // will be done
-    DEVICE_ATTR(my_aux_attribute, S_IRUGO, my_show_attr, NULL);
-    */
+    
+    /*first method attribute creating*/
+    DEVICE_ATTR(serial_number, S_IRUGO, my_show_serial, NULL);
+    
 
-
+    /*second method attribute creating*/
     struct device_attribute my_dev_attr = 
     {
         .attr = {
@@ -86,6 +92,19 @@ const struct file_operations my_def_f_ops = {
     };
 
     int test;
+
+    struct attribute * my_attr_list[] = 
+    {
+        &my_dev_attr.attr,
+        &dev_attr_serial_number.attr,
+        NULL
+    };
+
+    struct attribute_group my_attr_grp = 
+    {
+        .name = "my_attr_group",
+        .attrs = my_attr_list
+    };
 
 static int __init mod_start(void)
 {
@@ -124,7 +143,10 @@ static int __init mod_start(void)
         ret = PTR_ERR(my_device);
         goto class_destroy;
     }
-    test = sysfs_create_file((struct kobject*)&my_device->kobj ,&my_dev_attr.attr);
+    
+    /*test = sysfs_create_file((struct kobject*)&my_device->kobj ,&my_dev_attr.attr);*/
+
+    test = sysfs_create_group((struct kobject*)&my_device->kobj,&my_attr_grp);
     
     if(test)
     {   
