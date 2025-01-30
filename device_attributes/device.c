@@ -48,8 +48,25 @@ const struct file_operations my_def_f_ops = {
 	ssize_t my_show_attr(struct device *dev, struct device_attribute *attr, char *buf)
     {
         /*just print string*/
-        sprintf(buf, "HELLO FROM THE ATTRIBUTE\n");
-        return strlen("HELLO FROM THE ATTRIBUTE\n");
+        return sprintf(buf, "HELLO FROM THE ATTRIBUTE\n");
+    }
+
+
+	ssize_t my_store_attr(struct device *dev, struct device_attribute *attr,const char *buf, size_t count)
+    {
+        /*just get the string and convert it to long*/
+        long result;
+        int ret;
+        ret = kstrtol(buf, 10, &result);
+        
+        if(ret)
+        {
+            return ret;
+        }
+
+        printk("Got the information from the user: %ld\n", result);
+
+        return count;
     }
 
     /*
@@ -61,11 +78,11 @@ const struct file_operations my_def_f_ops = {
     struct device_attribute my_dev_attr = 
     {
         .attr = {
-            .mode = S_IRUGO,
+            .mode = (S_IRUGO | S_IWUGO),
             .name = "my_aux_attribute"
         },
         .show = my_show_attr,
-        .store = NULL
+        .store = my_store_attr
     };
 
     int test;
