@@ -282,13 +282,15 @@ static int __init pcd_driver_init(void)
             goto cdev_del;
 
         /* populate the sysds with device info */
-        pcdrv_data.device_pcd = device_create(pcdrv_data.class_pcd, NULL, pcdrv_data.device_number + i, NULL, "pcdev-%d",i);
+        pcdrv_data.device_pcd = device_create(pcdrv_data.class_pcd, NULL, pcdrv_data.device_number+i, NULL, "pcdev-%d",i);
         if(IS_ERR(pcdrv_data.device_pcd))
         {
             pr_err("Device creation failed\n");
             ret = PTR_ERR(pcdrv_data.class_pcd);
             goto class_del;
         }
+        //pcdrv_data.device_pcd->type->name = "taktopanie";
+        //pr_info("dev: %s created.\n", pcdrv_data.device_pcd->type->name);
 
     }
 
