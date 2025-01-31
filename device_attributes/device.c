@@ -4,19 +4,114 @@
 #include <linux/device.h>
 #include <linux/device/class.h>
 
-loff_t my_lseek (struct file *, loff_t, int)
+//#include <sys/types.h>
+//#include <unistd.h>
+
+/*Function prototypes*/
+loff_t my_lseek (struct file *, loff_t, int);
+ssize_t my_read (struct file *, char __user *, size_t, loff_t *);
+ssize_t my_write (struct file *, const char __user *, size_t, loff_t *);
+int my_open (struct inode *, struct file *);
+int my_release (struct inode *, struct file *);
+ssize_t my_show_attr(struct device *dev, struct device_attribute *attr, char *buf);
+ssize_t my_show_serial(struct device *dev, struct device_attribute *attr, char *buf);
+ssize_t my_store_attr(struct device *dev, struct device_attribute *attr,const char *buf, size_t count);
+static int __init mod_start(void);
+static void __exit mod_stop(void);
+
+//device memory MAX size
+#define DEV_MEM_SIZE    500
+char device_buff [DEV_MEM_SIZE];
+
+loff_t my_lseek (struct file * fd , loff_t offset, int whence)
 {
-    return 0;
+    switch(whence)
+    {
+        case SEEK_SET:
+            if((offset > DEV_MEM_SIZE)||(offset < 0))
+            {
+                return -EINVAL;
+            }
+            fd->f_pos = offset;
+            break;
+
+        case SEEK_CUR:
+            if(fd->f_pos + offset > DEV_MEM_SIZE)
+            {
+                return -ENOMEM;
+            }
+            if(offset < 0)
+            {
+                return -EINVAL;
+            }
+            fd->f_pos += offset;
+            break;
+
+        case SEEK_END:
+            if(offset + DEV_MEM_SIZE > DEV_MEM_SIZE)
+            {
+                /* SEEK END NOT SUPPORTED */
+                return -ENOMEM;
+            }
+            if(offset < 0)
+            {
+                return -EINVAL;
+            }
+            break;
+        default:
+            return -EINVAL;
+    }
+    pr_info("File pointer updated with: %lld value\n", fd->f_pos );
+    return fd->f_pos;
 }
 
-ssize_t my_read (struct file *, char __user *, size_t, loff_t *)
+ssize_t my_read (struct file *fd, char __user * buff, size_t count, loff_t * pos_pt)
 {
-    return 0;
+    pr_info("Read from the device requested for: %ld bytes\n", count);
+
+    if(*pos_pt + count > DEV_MEM_SIZE)
+    {
+        count = DEV_MEM_SIZE - *pos_pt;   
+    }
+
+
+    if(copy_to_user((void *) buff, &device_buff[*pos_pt], count))
+    {  
+        return -EFAULT;
+    }
+
+    *pos_pt += count;
+
+    pr_info("Data readed from the device: %ld\n", count);
+
+    return count;
+
 }
 
-ssize_t my_write (struct file *, const char __user *, size_t, loff_t *)
-{
-    return -EPERM;
+ssize_t my_write (struct file *fd, const char __user * buff, size_t count, loff_t * pos_pt)
+{   
+    if(*pos_pt + count > DEV_MEM_SIZE)
+    {
+        count = DEV_MEM_SIZE - *pos_pt;   
+    }
+
+    if(!count)
+    {
+        pr_info("Not enought memory\n");
+        return -ENOMEM;
+    }
+
+    if(copy_from_user(&device_buff[*pos_pt],(const void *) buff, count))
+    {  
+        return -EFAULT;
+    }
+
+    *pos_pt += count;
+
+    pr_info("Data written to the device: %ld\n", count);
+
+    return count;
+    
 }
 
 int my_open (struct inode *, struct file *)
@@ -84,7 +179,7 @@ const struct file_operations my_def_f_ops = {
     struct device_attribute my_dev_attr = 
     {
         .attr = {
-            .mode = (S_IRUGO | S_IWUGO),
+            .mode = (S_IRUGO | S_IWUSR),
             .name = "my_aux_attribute"
         },
         .show = my_show_attr,
