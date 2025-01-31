@@ -149,6 +149,9 @@ static int __init pcd_driver_init(void)
 
     if(ret < 0)
         goto unreg_chardev;
+
+    /* FROM NOW ON DEVICE MAY BE FOUND IN /PROC/DEVICES */
+
     /* 4. create device class under /sys/class/ */
     class_pcd = class_create(THIS_MODULE, "pcd_class");
 
@@ -167,6 +170,7 @@ static int __init pcd_driver_init(void)
         ret = PTR_ERR(class_pcd);
         goto class_del;
     }
+
     pr_info("Module init successfull.\n");
 
 	return 0;
