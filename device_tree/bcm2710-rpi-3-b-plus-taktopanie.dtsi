@@ -28,4 +28,11 @@
                 org,perm = <0x11>;
         };
 
+        pcdev-5 {
+		compatible = "pcdev-D1x","pcdev-A1x";
+                org,size = <2048>;
+                org,device-serial-num = "TESTDEV0005";
+                org,perm = <0x11>;
+        };
+
 };

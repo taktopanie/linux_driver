@@ -15,7 +15,7 @@ help:
 host:
 	make -C $(HOST_KERNEL_DIR) M=$(PWD) modules
 target_mod_copy:
-	scp  /home/maciej/Desktop/moje/programming/Linux/device_driver/device_tree/*.ko pi@192.168.3.15:/home/pi/Desktop/from_host/
+	scp  /home/maciej/Desktop/moje/programming/Linux/device_driver/device_tree/*.ko pi@192.168.3.215:/home/pi/Desktop/from_host/
 target_dt_copy:
-	scp /home/maciej/Desktop/moje/programming/Linux/device_driver/device_tree/*.dtb pi@192.168.3.15:/home/pi/Desktop/from_host/
+	scp /home/maciej/Desktop/moje/programming/Linux/device_driver/device_tree/*.dtb pi@192.168.3.215:/home/pi/Desktop/from_host/
 
