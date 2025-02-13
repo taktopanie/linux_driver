@@ -62,7 +62,7 @@ ssize_t direction_store(struct device *dev, struct device_attribute *attr,const 
 	if(sysfs_streq(buf, "in"))
 	{
 		ret = gpiod_direction_input(dev_data->desc);
-	}else if (sysfs_streq(buf, "in"))
+	}else if (sysfs_streq(buf, "out"))
 	{
 		ret = gpiod_direction_output(dev_data->desc, 0);
 	}else

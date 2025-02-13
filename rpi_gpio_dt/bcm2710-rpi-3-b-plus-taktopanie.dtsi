@@ -38,9 +38,12 @@
 
         my_gpios{
                 compatible = "org,taktopanie_gpios";
+                pinctrl-names = "default";
+                pinctrl-0 = <&my_led_gpio>;
+
                 gpio1{
                         label = "my_gpio_17";
-                        RPi-gpio = <&gpio 17 GPIO_ACTIVE_HIGH>;
+                        RPi-gpio = <&gpio 17 GPIO_ACTIVE_LOW>;
                 };
                 gpio2{
                         label = "my_gpio_27";
@@ -63,4 +66,11 @@
 
 
 
+};
+
+&gpio {
+        my_led_gpio: my_gpio {
+                brcm,pins = <0x11 0x13 0x16 0x1A 0x1B>;
+                brcm,function = <0x01>;
+        }; 
 };
