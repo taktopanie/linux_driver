@@ -1,0 +1,72 @@
+/ {
+        
+        my_gpios{
+                compatible = "org,taktopanie_gpios";
+                pinctrl-names = "default";
+                pinctrl-0 = <&my_lcd_gpio>;
+                status = "disabled";
+                gpio1{
+                        label = "my_gpio_1";
+                        RPi-gpio = <&gpio 1 GPIO_ACTIVE_HIGH>;
+                };
+
+                gpio2{
+                        label = "my_gpio_7";
+                        RPi-gpio = <&gpio 7 GPIO_ACTIVE_HIGH>;
+ 
+                };
+
+                gpio3{
+                        label = "my_gpio_8";
+                        RPi-gpio = <&gpio 8 GPIO_ACTIVE_HIGH>;
+                };
+
+                gpio4{
+                        label = "my_gpio_16";
+                        RPi-gpio = <&gpio 16 GPIO_ACTIVE_HIGH>;
+                };
+
+                gpio5{
+                        label = "my_gpio_20";
+                        RPi-gpio = <&gpio 20 GPIO_ACTIVE_HIGH>;
+                };
+
+                gpio6{
+                        label = "my_gpio_21";
+                        RPi-gpio = <&gpio 21 GPIO_ACTIVE_HIGH>;
+                };
+
+                gpio7{
+                        label = "my_gpio_25";
+                        RPi-gpio = <&gpio 25 GPIO_ACTIVE_HIGH>;
+                };
+        };
+
+        hd44780 {
+                compatible = "hit,hd44780";
+                pinctrl-names = "default";
+                pinctrl-0 = <&my_lcd_gpio>;
+
+            display-height-chars = <2>;
+            display-width-chars  = <16>;
+            data-gpios = <&gpio 1 0>,
+                         <&gpio 7 0>,
+                         <&gpio 8 0>,
+                         <&gpio 25 0>;
+            enable-gpios = <&gpio 16 0>;
+            rs-gpios = <&gpio 21 0>;
+            rw-gpios = <&gpio 20 0>;
+    };
+
+
+
+};
+
+
+
+&gpio {
+        my_lcd_gpio: lcd_gpio {
+                brcm,pins = <1 7 8 16 20 21 25>;
+                brcm,function = <0x01>;
+        }; 
+};
