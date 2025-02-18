@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <string.h>
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
 #include <stdlib.h>
-
 #include <unistd.h>
+#include <errno.h>
 
 /* USER INTERFACE USED BY HD44780 WITH THIS DRIVER IS IN CHARLCD.C */
 
@@ -32,108 +30,172 @@ P25                               gpio25           14(D7)          Data line 7
 #define LCD_ESCAPE_LEN		24
 
 
-void display_clear(int fd)
+int display_clear(int fd)
 {
-	write(fd, "\n\f", 2);
+	int tmp = write(fd, "\n\f", 2);
+	if(tmp < 0) return errno;
+	return 0;
 }
 
-void display_off(int fd)
+int display_off(int fd)
 {
 	char msg [LCD_ESCAPE_LEN];
 	sprintf(msg, "%c[Lb", LCD_ESCAPE_CHAR);
-	write(fd, msg, strlen(msg));
+	int tmp = write(fd, msg, strlen(msg));
+
+	if(tmp < 0) return errno;
+	return 0;
 }
 
-void display_on(int fd)
+int display_on(int fd)
 {
 	char msg [LCD_ESCAPE_LEN];
 	sprintf(msg, "%c[LB", LCD_ESCAPE_CHAR);
-	write(fd, msg, strlen(msg));
+	int tmp = write(fd, msg, strlen(msg));
+
+	if(tmp < 0) return errno;
+	return 0;
 }
 
-void display_reset(int fd)
+int display_reset(int fd)
 {
 	char msg [LCD_ESCAPE_LEN];
 	sprintf(msg, "%c[LI", LCD_ESCAPE_CHAR);
-	write(fd, msg, strlen(msg));
+	int tmp = write(fd, msg, strlen(msg));
+
+	if(tmp < 0) return errno;
+	return 0;
 }
 
-void cursor_ON(int fd)
+int cursor_ON(int fd)
 {
 	char msg [LCD_ESCAPE_LEN];
 	sprintf(msg, "%c[LC", LCD_ESCAPE_CHAR);
-	write(fd, msg, strlen(msg));
+	int tmp = write(fd, msg, strlen(msg));
+
+	if(tmp < 0) return errno;
+	return 0;
 }
 
-void cursor_OFF(int fd)
+int cursor_OFF(int fd)
 {
 	char msg [LCD_ESCAPE_LEN];
 	sprintf(msg, "%c[Lc", LCD_ESCAPE_CHAR);
-	write(fd, msg, strlen(msg));
+	int tmp = write(fd, msg, strlen(msg));
+
+	if(tmp < 0) return errno;
+	return 0;
 }
 
-void blink_ON(int fd)
+int blink_ON(int fd)
 {
 	char msg [LCD_ESCAPE_LEN];
 	sprintf(msg, "%c[LB", LCD_ESCAPE_CHAR);
-	write(fd, msg, strlen(msg));
+	int tmp = write(fd, msg, strlen(msg));
+
+	if(tmp < 0) return errno;
+	return 0;
 }
 
-void blink_OFF(int fd)
+int blink_OFF(int fd)
 {
 	char msg [LCD_ESCAPE_LEN];
 	sprintf(msg, "%c[Lb", LCD_ESCAPE_CHAR);
-	write(fd, msg, strlen(msg));
+	int tmp = write(fd, msg, strlen(msg));
+
+	if(tmp < 0) return errno;
+	return 0;
 }
 
-void cursor_LEFT(int fd)
+int cursor_LEFT(int fd)
 {
 	char msg [LCD_ESCAPE_LEN];
 	sprintf(msg, "%c[Ll", LCD_ESCAPE_CHAR);
-	write(fd, msg, strlen(msg));
+	int tmp = write(fd, msg, strlen(msg));
+
+	if(tmp < 0) return errno;
+	return 0;
 }
 
-void cursor_RIGHT(int fd)
+int cursor_RIGHT(int fd)
 {
 	char msg [LCD_ESCAPE_LEN];
 	sprintf(msg, "%c[Lr", LCD_ESCAPE_CHAR);
-	write(fd, msg, strlen(msg));
+	int tmp = write(fd, msg, strlen(msg));
+
+	if(tmp < 0) return errno;
+	return 0;
 }
 
-void display_LEFT(int fd)
+int display_LEFT(int fd)
 {
 	char msg [LCD_ESCAPE_LEN];
 	sprintf(msg, "%c[LL", LCD_ESCAPE_CHAR);
-	write(fd, msg, strlen(msg));
+	int tmp = write(fd, msg, strlen(msg));
+
+	if(tmp < 0) return errno;
+	return 0;
 }
 
-void display_RIGHT(int fd)
+int display_RIGHT(int fd)
 {
 	char msg [LCD_ESCAPE_LEN];
 	sprintf(msg, "%c[LR", LCD_ESCAPE_CHAR);
-	write(fd, msg, strlen(msg));
+	int tmp = write(fd, msg, strlen(msg));
+
+	if(tmp < 0) return errno;
+	return 0;
 }
 
-// void goto_X_LCD(int fd, int x)
-// {
-// 	char msg [LCD_ESCAPE_LEN];
-// 	sprintf(msg, "%c[Lx001y002", LCD_ESCAPE_CHAR);
-// 	write(fd, msg, strlen(msg));
-// }
+int goto_X_LCD(int fd, int x)
+{
+	char msg [LCD_ESCAPE_LEN];
+	sprintf(msg, "%c[Lx%03d;", LCD_ESCAPE_CHAR, x);
+	int tmp = write(fd, msg, strlen(msg));
 
-// void goto_Y_LCD(int fd, int y)
-// {
-// 	char msg [LCD_ESCAPE_LEN];
-// 	sprintf(msg, "%c[Ly002x001", LCD_ESCAPE_CHAR);
-// 	write(fd, msg, strlen(msg));
-// }
+	if(tmp < 0) return errno;
+	return 0;
+}
 
-	/*
-	TODO:
-	case 'x':	 gotoxy : LxXXX[yYYY]; 
-	case 'y':	 gotoxy : LyYYY[xXXX];
-	*/
+int goto_Y_LCD(int fd, int y)
+{
+	char msg [LCD_ESCAPE_LEN];
+	sprintf(msg, "%c[Ly%03d;", LCD_ESCAPE_CHAR, y);
+	int tmp = write(fd, msg, strlen(msg));
 
+	if(tmp < 0) return errno;
+	return 0;
+}
+
+int goto_XY_LCD(int fd, int x, int y)
+{
+	char msg [LCD_ESCAPE_LEN];
+	sprintf(msg, "%c[Ly%03d%03d;", LCD_ESCAPE_CHAR, x, y);
+	int tmp = write(fd, msg, strlen(msg));
+
+	if(tmp < 0) return errno;
+	return 0;
+}
+
+int backlight_ON(int fd)
+{
+	char msg [LCD_ESCAPE_LEN];
+	sprintf(msg, "%c[L+", LCD_ESCAPE_CHAR);
+	int tmp = write(fd, msg, strlen(msg));
+
+	if(tmp < 0) return errno;
+	return 0;
+}
+
+int backlight_OFF(int fd)
+{
+	char msg [LCD_ESCAPE_LEN];
+	sprintf(msg, "%c[L-", LCD_ESCAPE_CHAR);
+	int tmp = write(fd, msg, strlen(msg));
+
+	if(tmp < 0) return errno;
+	return 0;
+}
 
 
 int main(int argc, char *argv[])
@@ -141,16 +203,31 @@ int main(int argc, char *argv[])
 	int fd; 
 	fd = open("/dev/lcd", O_WRONLY);
 
-	char * message = "TEST STRING...";
+	if(fd <= 0)
+	{	
+		printf("Cannot open device: %s\n", strerror(errno));
+		return -1;
+	}
 
 	int tmp ;
-
 	char scan_msg [50];
 
 	printf("What do you want to display?: ");
 
-	display_clear(fd);
-	write(fd, "Input message...", strlen("Input message...") -1 );
+	if(display_clear(fd))
+		{
+			printf("Cannot clear the screen: %s\n", strerror(errno));
+			return errno;
+		}
+		
+	backlight_ON(fd);
+
+	tmp = write(fd, "Input message...", strlen("Input message...") -1 );
+
+	if(tmp < 0)
+	{
+		return errno;
+	}
 
 	scanf("%80[^\n]s",&scan_msg);
 
@@ -158,23 +235,32 @@ int main(int argc, char *argv[])
 	blink_OFF(fd);
 	cursor_OFF(fd);
 
-	// goto_X_LCD(fd, 1);
-	// goto_Y_LCD(fd, 1);
+	goto_XY_LCD(fd, 0, 1);
 
 	tmp = write(fd, scan_msg, strlen(scan_msg));
+
+	if(tmp < 0)
+	{
+		return errno;
+	}
 
 	for(int x = 0; x < 10 ; x++)
 	{
 		display_RIGHT(fd);
-		sleep(1);
+		usleep(200000);
 	}
 
 	for(int x = 0; x < 10 ; x++)
 	{
 		display_LEFT(fd);
-		sleep(1);
+		usleep(300000);
 	}
+	
 	blink_ON(fd);
+	sleep(5);
+
+	backlight_OFF(fd);
+
 	close (fd);
 	return 0;
  }

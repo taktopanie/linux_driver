@@ -40,6 +40,11 @@
                         label = "my_gpio_25";
                         RPi-gpio = <&gpio 25 GPIO_ACTIVE_HIGH>;
                 };
+
+                gpio8{
+                        label = "my_gpio_12";
+                        RPi-gpio = <&gpio 12 GPIO_ACTIVE_HIGH>;
+                };
         };
 
         hd44780 {
@@ -47,26 +52,23 @@
                 pinctrl-names = "default";
                 pinctrl-0 = <&my_lcd_gpio>;
 
-            display-height-chars = <2>;
-            display-width-chars  = <16>;
-            data-gpios = <&gpio 1 0>,
+                display-height-chars = <2>;
+                display-width-chars  = <16>;
+                data-gpios = <&gpio 1 0>,
                          <&gpio 7 0>,
                          <&gpio 8 0>,
                          <&gpio 25 0>;
-            enable-gpios = <&gpio 16 0>;
-            rs-gpios = <&gpio 21 0>;
-            rw-gpios = <&gpio 20 0>;
+                enable-gpios = <&gpio 16 0>;
+                rs-gpios = <&gpio 21 0>;
+                rw-gpios = <&gpio 20 0>;
+                backlight-gpios = <&gpio 12 0>;
     };
-
-
-
 };
-
 
 
 &gpio {
         my_lcd_gpio: lcd_gpio {
-                brcm,pins = <1 7 8 16 20 21 25>;
+                brcm,pins = <1 7 8 12 16 20 21 25>;
                 brcm,function = <0x01>;
         }; 
 };
