@@ -5,47 +5,13 @@
         my_gpios{
                 compatible = "org,taktopanie_gpios";
                 pinctrl-names = "default";
-                pinctrl-0 = <&my_lcd_gpio>;
-                status = "disabled";
-                gpio1{
-                        label = "my_gpio_1";
-                        RPi-gpio = <&gpio 1 GPIO_ACTIVE_HIGH>;
-                };
+                pinctrl-0 = <&my_testing_led>;
+                status = "okay";
 
                 gpio2{
-                        label = "my_gpio_7";
-                        RPi-gpio = <&gpio 7 GPIO_ACTIVE_HIGH>;
+                        label = "my_gpio_17";
+                        RPi-gpio = <&gpio 17 GPIO_ACTIVE_HIGH>;
  
-                };
-
-                gpio3{
-                        label = "my_gpio_8";
-                        RPi-gpio = <&gpio 8 GPIO_ACTIVE_HIGH>;
-                };
-
-                gpio4{
-                        label = "my_gpio_16";
-                        RPi-gpio = <&gpio 16 GPIO_ACTIVE_HIGH>;
-                };
-
-                gpio5{
-                        label = "my_gpio_20";
-                        RPi-gpio = <&gpio 20 GPIO_ACTIVE_HIGH>;
-                };
-
-                gpio6{
-                        label = "my_gpio_21";
-                        RPi-gpio = <&gpio 21 GPIO_ACTIVE_HIGH>;
-                };
-
-                gpio7{
-                        label = "my_gpio_25";
-                        RPi-gpio = <&gpio 25 GPIO_ACTIVE_HIGH>;
-                };
-
-                gpio8{
-                        label = "my_gpio_12";
-                        RPi-gpio = <&gpio 12 GPIO_ACTIVE_HIGH>;
                 };
         };
 
@@ -68,16 +34,12 @@
 
         my_leds {
                 compatible = "gpio-leds";
-
                 pinctrl-names = "default";
                 pinctrl-0 = <&my_led_gpio>;
-
-                led-cpslck {
-                        label = "CAPSLOCK_LED";
-                        function = LED_FUNCTION_CAPSLOCK;
-                        linux,default-trigger = "kbd-capslock";
+                status = "okay";
+                led-gpio {
+                        label = "gpio_LED";
                         gpios = <&gpio 27 GPIO_ACTIVE_HIGH>;
-                     
                 };
         };
 };
@@ -92,6 +54,10 @@
         }; 
         my_led_gpio: my_led {
                 brcm,pins = <27>;
+                brcm,function = <0x01>;
+        };
+        my_testing_led: my_testing_led {
+                brcm,pins = <17>;
                 brcm,function = <0x01>;
         };
 };

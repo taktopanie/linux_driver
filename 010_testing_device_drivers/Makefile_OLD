@@ -1,4 +1,4 @@
-obj-m := my_gpio.o 
+obj-m := gpio-sysfs.o 
 
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
