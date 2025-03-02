@@ -36,7 +36,7 @@
                 compatible = "gpio-leds";
                 pinctrl-names = "default";
                 pinctrl-0 = <&my_led_gpio>;
-                status = "disabled";
+                status = "okay";
                 led-gpio {
                         label = "gpio_LED";
                         gpios = <&gpio 27 GPIO_ACTIVE_HIGH>;

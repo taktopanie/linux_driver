@@ -91,22 +91,23 @@ ssize_t my_dev_read (struct file *filp, char __user *buff, size_t count, loff_t 
     }
 
     /* TODO */   
-    pr_info("Setting gpio 27\n");
+    pr_info("Setting gpio 27 (RPI 539)\n");
 
-    if(gpio_is_valid(27) == false)
+    if(gpio_is_valid(539) == false)
     {
         pr_info("PIN 27 invalid\n");
         return -EINVAL;
     }
 
-    if(gpio_request(27, "gpio_LED") < 0)
+    if(gpio_request(539, "gpio_LED") < 0)
     {
         pr_info("PIN 27 cannot be used\n");
         return -EINVAL;
     }
 
-    gpio_direction_output(27, 0);
-    gpio_set_value(27, 1);
+    gpio_free(539);
+    gpio_direction_output(539, 0);
+    gpio_set_value(539, 1);
     
 
     if(copy_to_user(buff, my_dat->buffer, count))
