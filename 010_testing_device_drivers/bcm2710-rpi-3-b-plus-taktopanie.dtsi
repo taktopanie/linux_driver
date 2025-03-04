@@ -31,21 +31,19 @@
                 rw-gpios = <&gpio 20 0>;
                 backlight-gpios = <&gpio 12 0>;
         };
-
         my_leds {
                 compatible = "gpio-leds";
                 pinctrl-names = "default";
                 pinctrl-0 = <&my_led_gpio>;
-                status = "disabled";
+                status = "okay";
                 led-gpio {
                         label = "gpio_LED";
                         gpios = <&gpio 27 GPIO_ACTIVE_HIGH>;
+                        linux,default-trigger = "timer";
+                        led-pattern = <1000 1000>;
                 };
         };
 };
-
-
-
 
 &gpio {
         my_lcd_gpio: lcd_gpio {

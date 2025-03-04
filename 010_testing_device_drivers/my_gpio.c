@@ -5,11 +5,21 @@
 
 #include <linux/gpio.h>
 
+#include <linux/of.h>
+#include <linux/gpio/consumer.h>
+
 #define NO_OF_DEV   2
 #define MAX_BUFF    200
 
 
 char dev_buffer[NO_OF_DEV][MAX_BUFF];
+
+struct my_priv_data
+{
+    struct gpio_desc* my_gpio;
+};
+
+struct my_priv_data _my_data;
 
 struct dev_data {
     const char * serial_number;
@@ -89,25 +99,6 @@ ssize_t my_dev_read (struct file *filp, char __user *buff, size_t count, loff_t 
     {
         count = MAX_BUFF - *l_pos;
     }
-
-    /* TODO */   
-    pr_info("Setting gpio 27 (RPI 539)\n");
-
-    if(gpio_is_valid(539) == false)
-    {
-        pr_info("PIN 27 invalid\n");
-        return -EINVAL;
-    }
-
-    if(gpio_request(539, "gpio_LED") < 0)
-    {
-        pr_info("PIN 27 cannot be used\n");
-        return -EINVAL;
-    }
-
-    gpio_free(539);
-    gpio_direction_output(539, 0);
-    gpio_set_value(539, 1);
     
 
     if(copy_to_user(buff, my_dat->buffer, count))
@@ -153,13 +144,74 @@ int my_dev_open (struct inode *inode , struct file *filp)
     
     filp->private_data = my_dt;
 
+    /* Setup GPIO led ON */   
+    pr_info("Setting gpio 27 (RPI 539)\n");
+
+    if(gpio_is_valid(539) == false)
+    {
+        pr_info("PIN 27 invalid\n");
+        return -EINVAL;
+    }
+
+    if(gpio_request(539, "gpio_LED") < 0)
+    {
+        pr_info("PIN 27 cannot be used\n");
+        return -EINVAL;
+    }
+
+    gpio_direction_output(539, 0);
+    gpio_set_value(539, 1);
+
+    gpio_free(539);
+
     pr_info("Device %s opened...\n", my_dt->serial_number);
+    
+    /* GPIO on */   
+    pr_info("Setting gpio 27 (RPI 539)\n");
+
+    if(gpio_is_valid(539) == false)
+    {
+        pr_info("PIN 27 invalid\n");
+        return -EINVAL;
+    }
+
+    if(gpio_request(539, "gpio_LED") < 0)
+    {
+        pr_info("PIN 27 cannot be used\n");
+        return -EINVAL;
+    }
+
+    
+    gpio_direction_output(539, 0);
+    gpio_set_value(539, 1);
+    gpio_free(539); 
     return 0;
 }
 
 int my_dev_release (struct inode *inode, struct file *filp)
 {
+    /* Setup GPIO led ON */   
+    pr_info("Setting gpio 27 (RPI 539)\n");
+
+    if(gpio_is_valid(539) == false)
+    {
+        pr_info("PIN 27 invalid\n");
+        return -EINVAL;
+    }
+
+    if(gpio_request(539, "gpio_LED") < 0)
+    {
+        pr_info("PIN 27 cannot be used\n");
+        return -EINVAL;
+    }
+
+    gpio_direction_output(539, 0);
+    gpio_set_value(539, 1);
+    
+    gpio_free(539);
+    
     pr_info("Device released\n");
+ 
     return 0;
 }
 
@@ -176,6 +228,11 @@ static int __init my_driver_init(void)
 {
     int ret;
     int i;
+    const char * name;
+
+    struct device_node* my_dev_par;
+    struct device_node* my_dev_child;
+    const char * node_name = "my_gpios";
 
     /* allocate device numbers */
     ret = alloc_chrdev_region(&my_data.dev_num, 0, NO_OF_DEV, "my_devices");
@@ -221,6 +278,40 @@ static int __init my_driver_init(void)
         }
     }
 
+    my_dev_par = of_find_node_by_name(NULL, node_name);
+    if(my_dev_par)
+    {
+
+        of_node_put(my_dev_par);
+
+        if(of_property_read_string(my_dev_par, "compatible", &name))
+        {
+            /* error */
+            pr_err("wrong value\n");
+            return -EINVAL;
+        }
+
+        printk("\"%s\" node has %d child, Fetched \"compatible\" data: %s\n",node_name ,of_get_available_child_count(my_dev_par),name);
+
+        my_dev_child = of_get_next_child(my_dev_par, NULL);
+
+        of_property_read_string(my_dev_child, "label", &name);
+        printk("Child fetched \"label\" data: %s\n", name);
+
+        /*create GPIO desc for my_device -> will be edited*/
+        _my_data.my_gpio = devm_fwnode_gpiod_get(my_data.my_device, &my_dev_child->fwnode, "RPi",GPIOD_ASIS, "my_gpio");
+
+        if(IS_ERR(_my_data.my_gpio))
+        {
+            pr_err("Could not create GPIO0\n");
+            return (PTR_ERR(_my_data.my_gpio ));
+        }
+
+        gpiod_direction_output(_my_data.my_gpio , 0);
+        gpiod_set_value(_my_data.my_gpio , 1);
+        pr_info("LED turned ON\n");
+    }
+
     printk("Module inserted OK\n");
     return 0;
 
@@ -248,6 +339,9 @@ static void __exit my_driver_exit(void)
     }
     class_destroy(my_data.my_class);
     unregister_chrdev_region(my_data.dev_num, NO_OF_DEV);
+
+    gpiod_set_value(_my_data.my_gpio , 0);
+    pr_info("LED turned OFF\n");
     printk("Module removed OK\n");
 };
 
