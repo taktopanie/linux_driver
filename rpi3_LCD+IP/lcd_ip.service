@@ -1,0 +1,10 @@
+[Unit]
+Description=IP is written to HD_LCD display after system boot
+
+[Service]
+Type=simple
+ExecStart=/home/pi/Desktop/from_host/turn_ip.sh
+Type=oneshot
+
+[Install]
+WantedBy=network-online.target
