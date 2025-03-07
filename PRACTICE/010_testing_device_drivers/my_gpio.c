@@ -16,6 +16,7 @@ char dev_buffer[NO_OF_DEV][MAX_BUFF];
 
 struct gpio_priv_data
 {
+    int gpio_used;
     dev_t dev_num; 
     struct gpio_desc* my_gpio;
     struct device * my_device;
@@ -60,6 +61,7 @@ ssize_t my_dev_read (struct file *, char __user *, size_t, loff_t *);
 ssize_t my_dev_write (struct file *, const char __user *, size_t, loff_t *);
 int my_dev_open (struct inode *, struct file *);
 int my_dev_release (struct inode *, struct file *);
+long my_dev_ioctl (struct file * filp, unsigned int fd, unsigned long cmd);
 
 loff_t my_dev_lseek (struct file *filp, loff_t l_pos, int whence)
 {
@@ -195,18 +197,27 @@ int my_dev_release (struct inode *inode, struct file *filp)
     return 0;
 }
 
+long my_dev_ioctl (struct file * filp, unsigned int fd, unsigned long cmd)
+{
+    pr_info("Device ioctl called with : %ld cmd\n", cmd);
+    return 0;
+}
+
 struct file_operations f_ops = 
 {
     .llseek = my_dev_lseek,
     .read = my_dev_read,
     .write = my_dev_write,
     .open = my_dev_open,
-    .release = my_dev_release
+    .release = my_dev_release,
+    .unlocked_ioctl = my_dev_ioctl,
+    .compat_ioctl = my_dev_ioctl
 };
 
 struct file_operations gpio_ops = 
 {
     /* TODO: ioctl will be done */
+    .compat_ioctl = my_dev_ioctl
 };
 
 static int __init my_driver_init(void)
@@ -268,7 +279,7 @@ static int __init my_driver_init(void)
     /*if device node exists*/
     if(my_dev_par)
     {
-
+        GPIO_data.gpio_used = 1;
         of_node_put(my_dev_par);
 
         if(of_property_read_string(my_dev_par, "compatible", &name))
@@ -366,20 +377,22 @@ static void __exit my_driver_exit(void)
         device_destroy(my_data.my_class, my_data.dev_num+i);
         cdev_del(&my_data.dev_data[i].dev_cdev);
     }
-
-    gpiod_set_value(GPIO_data.my_gpio , 0);
-
-    /* destroy GPIO */
-    device_destroy(GPIO_data.my_class, GPIO_data.dev_num);
-    cdev_del(&GPIO_data.dev_cdev);
-    unregister_chrdev_region(GPIO_data.dev_num, 1);
+    
+    /*if GPIO was used*/
+    if(GPIO_data.gpio_used)
+    {
+        gpiod_set_value(GPIO_data.my_gpio , 0);
+        /* destroy GPIO */
+        device_destroy(GPIO_data.my_class, GPIO_data.dev_num);
+        cdev_del(&GPIO_data.dev_cdev);
+        unregister_chrdev_region(GPIO_data.dev_num, 1);
+        pr_info("LED turned OFF\n");
+    }
 
     /* destroy class and CHAR devs */
     class_destroy(my_data.my_class);
     unregister_chrdev_region(my_data.dev_num, NO_OF_DEV);
 
-    
-    pr_info("LED turned OFF\n");
     printk("Module removed OK\n");
 };
 
