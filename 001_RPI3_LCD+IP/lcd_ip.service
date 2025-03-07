@@ -1,0 +1,13 @@
+[Unit]
+Description=IP is written to HD_LCD display after system boot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/home/pi/Desktop/from_host/turn_ip.sh
+Type=oneshot
+
+[Install]
+Also=systemd-networkd-wait-online.service
+WantedBy=network-online.target

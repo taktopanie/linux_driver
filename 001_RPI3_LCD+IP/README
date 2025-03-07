@@ -1,0 +1,26 @@
+/* Instruction */
+
+1. Build bcm2710-rpi-3-b-plus-taktopanie.dtsi with your Linux Kernel to apply LCD_HD DTB and copy to /boot/
+2. Insert lcd_ip.service into systemd folder
+3. Map lcd_ip.service to turn_ip.sh script
+4. Make lcd_app ELF file (if cross_compile for RPi3 use https://releases.linaro.org/components/toolchain/binaries/latest-7/arm-linux-gnueabihf/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf.tar.xz)
+4. Map turn_ip.sh script to lcd_app ELF file
+5. Enable service in systemd system
+6. Reboot
+
+=========================================================================================================
+RPi Pin                           GPIO number      16x2 LCD pin    Purpose 
+===========================================================================================================
+P21                               gpio21           4(RS)           Register selection (Character vs. Command)
+P20                               gpio20           5(RW)           Read/write 
+P16                               gpio16           6(EN)           Enable
+P1                                gpio1            11(D4)          Data line 4
+P7                                gpio7            12(D5)          Data line 5
+P8                                gpio8            13(D6)          Data line 6
+P25                               gpio25           14(D7)          Data line 7 
+(GND)                             ----             15(BKLTA)       Backlight anode(+)
+(sys_5V supply)                   ----             16(BKLTK)       Backlight cathode(-)
+
+(GND)                             ----             1(VSS/GND)      Ground
+(sys_5V supply)                   ----             2(VCC)          +5V supply 
+============================================================================================================= 
