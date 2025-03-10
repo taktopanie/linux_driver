@@ -1,0 +1,1 @@
+Making char device and LED toggling while module is loaded

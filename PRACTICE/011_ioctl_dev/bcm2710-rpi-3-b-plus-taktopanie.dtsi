@@ -1,0 +1,26 @@
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/leds/common.h>
+/ {
+        
+        my_gpios{
+                compatible = "org,taktopanie_gpios";
+                pinctrl-names = "default";
+                pinctrl-0 = <&my_testing_led>;
+                status = "okay";
+
+                gpio2{
+                        label = "my_gpio_17";
+                        RPi-gpio = <&gpio 17 GPIO_ACTIVE_HIGH>;
+ 
+                };
+        };
+};
+
+&gpio {
+        my_testing_led: my_testing_led {
+                brcm,pins = <17>;
+                brcm,function = <0x01>;
+        };
+};
+
+
