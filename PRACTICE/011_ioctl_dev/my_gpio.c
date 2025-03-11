@@ -11,8 +11,10 @@
 #define NO_OF_DEV   2
 #define MAX_BUFF    200
 
-#define WR_VALUE _IOW('a','a',int32_t*)
-#define RD_VALUE _IOR('a','b',int32_t*)
+#define WR_VALUE _IOW(0x10, 0, unsigned long *)
+#define RD_VALUE _IOR(0x10, 1, unsigned long *)
+#define LED_ON _IO(0x10, 2)
+#define LED_OFF _IO(0x10, 3)
 
 char dev_buffer[NO_OF_DEV][MAX_BUFF];
 
@@ -63,10 +65,10 @@ ssize_t my_dev_read (struct file *, char __user *, size_t, loff_t *);
 ssize_t my_dev_write (struct file *, const char __user *, size_t, loff_t *);
 int my_dev_open (struct inode *, struct file *);
 int my_dev_release (struct inode *, struct file *);
-static long my_dev_ioctl (struct file *, unsigned int, unsigned long);
+long my_dev_ioctl (struct file *, unsigned int, unsigned long);
 
 
-loff_t my_dev_lseek (struct file *filp, loff_t l_pos, int whence)
+ loff_t my_dev_lseek (struct file *filp, loff_t l_pos, int whence)
 {
     int temp;
 
@@ -98,7 +100,7 @@ loff_t my_dev_lseek (struct file *filp, loff_t l_pos, int whence)
 
 }
 
-ssize_t my_dev_read (struct file *filp, char __user *buff, size_t count, loff_t *l_pos)
+ ssize_t my_dev_read (struct file *filp, char __user *buff, size_t count, loff_t *l_pos)
 {
     struct dev_data* my_dat = filp->private_data;
 
@@ -118,7 +120,7 @@ ssize_t my_dev_read (struct file *filp, char __user *buff, size_t count, loff_t 
     return count;
 }
 
-ssize_t my_dev_write (struct file *filp, const char __user *buff, size_t count, loff_t *l_pos)
+ ssize_t my_dev_write (struct file *filp, const char __user *buff, size_t count, loff_t *l_pos)
 {
     struct dev_data* my_dat = filp->private_data;
 
@@ -143,7 +145,7 @@ ssize_t my_dev_write (struct file *filp, const char __user *buff, size_t count, 
     return count;
 }
 
-int my_dev_open (struct inode *inode , struct file *filp)
+ int my_dev_open (struct inode *inode , struct file *filp)
 {
     struct dev_data* my_dt;
 
@@ -152,72 +154,49 @@ int my_dev_open (struct inode *inode , struct file *filp)
     filp->private_data = my_dt;
 
     pr_info("Device %s opened...\n", my_dt->serial_number);
-    
-    /* GPIO ON <<<< OLD METHOD GPIO HANDLING */  
-    if(gpio_is_valid(539) == false)
-    {
-        pr_info("PIN 27 invalid\n");
-    }else
-    {
-        if(gpio_request(539, "gpio_LED") < 0)
-        {
-            /*pr_info("PIN 27 cannot be used\n");*/
-        }else
-        {
-            pr_info("Setting gpio 27 <ON> (RPI 539)\n");
-            gpio_direction_output(539, 0);
-            gpio_set_value(539, 1);
-            gpio_free(539); 
-        }
-    }
 
     return 0;
 }
 
-int my_dev_release (struct inode *inode, struct file *filp)
+ int my_dev_release (struct inode *inode, struct file *filp)
 {
-    /* GPIO OFF <<<< OLD METHOD GPIO HANDLING */   
-    if(gpio_is_valid(539) == false)
-    {
-        pr_info("PIN 27 invalid\n");
-    }else
-    {
-        if(gpio_request(539, "gpio_LED") < 0)
-        {
-            /*pr_info("PIN 27 cannot be used\n");*/
-            
-        }else
-        {
-            pr_info("Setting gpio 27 <OFF> (RPI 539)\n");
-            gpio_direction_output(539, 0);
-            gpio_set_value(539, 1);
-            gpio_free(539);
-        }
-    }
-
     pr_info("Device released\n");
- 
     return 0;
 }
 
-long my_dev_ioctl (struct file *filp, unsigned int cmd, unsigned long arg)
+unsigned long  value = 45;
+ long my_dev_ioctl (struct file *filp, unsigned int cmd, unsigned long arg)
 {
-    int32_t value = 45;
+    pr_info("IOCTL CALLED\n");
     switch(cmd) 
     {
         case WR_VALUE:
-                if( copy_from_user(&value ,(int32_t*) arg, sizeof(value)) )
+                if( copy_from_user(&value ,(unsigned long *) arg, sizeof(value)) )
                 {
                         pr_err("Data Write : Err!\n");
                 }
-                pr_info("Value = %d\n", value);
+                pr_info("WRITE\n");
+                pr_info("Value = %ld\n", value);
                 break;
+
         case RD_VALUE:
-                if( copy_to_user((int32_t*) arg, &value, sizeof(value)) )
+                if( copy_to_user((unsigned long *) arg, &value, sizeof(value)) )
                 {
                         pr_err("Data Read : Err!\n");
                 }
+                pr_info("READ\n");
                 break;
+
+        case LED_ON:
+            gpiod_set_value(GPIO_data.my_gpio , 1);
+            pr_info("LED_ON\n");
+            break;
+
+        case LED_OFF:
+            gpiod_set_value(GPIO_data.my_gpio , 0);
+            pr_info("LED_OFF\n");
+            break;
+
         default:
                 pr_info("Default\n");
                 break;
@@ -227,24 +206,21 @@ long my_dev_ioctl (struct file *filp, unsigned int cmd, unsigned long arg)
 
 }
 
-struct file_operations f_ops = 
+ struct file_operations f_ops = 
 {
     .llseek = my_dev_lseek,
     .read = my_dev_read,
     .write = my_dev_write,
     .open = my_dev_open,
-    .release = my_dev_release,
+    .release = my_dev_release
+};
+
+ struct file_operations gpio_ops = 
+{
     .unlocked_ioctl = my_dev_ioctl
 };
 
-struct file_operations gpio_ops = 
-{
-    /* TODO: ioctl will be done */
-    .unlocked_ioctl = my_dev_ioctl,
-    .compat_ioctl = my_dev_ioctl
-};
-
-static int __init my_driver_init(void)
+ int __init my_driver_init(void)
 {
     int ret;
     int i;
@@ -313,13 +289,8 @@ static int __init my_driver_init(void)
             return -EINVAL;
         }
 
-
         my_dev_child = of_get_next_child(my_dev_par, NULL);
-
-
-        printk("\"%s\" node has %d child, Fetched \"compatible\" data: %s\n",node_name ,of_get_available_child_count(my_dev_par),name);
         of_property_read_string(my_dev_child, "label", &name);
-        printk("Child fetched \"label\" data: %s\n", name);
 
         /*create GPIO desc for my_device -> will be edited*/
         GPIO_data.my_gpio = devm_fwnode_gpiod_get(my_data.my_device, &my_dev_child->fwnode, "RPi",GPIOD_ASIS, "my_gpio");
@@ -332,7 +303,7 @@ static int __init my_driver_init(void)
 
         /* allocate device number */
         ret = alloc_chrdev_region(&GPIO_data.dev_num, 2, 1, "my_devices");
-        pr_info("Device <major>:<minor>: %d:%d\n", MAJOR(GPIO_data.dev_num), MINOR(GPIO_data.dev_num));
+        pr_info("GPIO device <major>:<minor>: %d:%d\n", MAJOR(GPIO_data.dev_num), MINOR(GPIO_data.dev_num));
         if(ret)
         {
             pr_info("Cannot allocate device number\n");
@@ -361,10 +332,9 @@ static int __init my_driver_init(void)
             goto gpio_dev_err;
         }
 
+        /* LED init */
         gpiod_direction_output(GPIO_data.my_gpio , 0);
-        gpiod_set_value(GPIO_data.my_gpio , 1);
-        pr_info("LED turned ON\n");
-        
+        gpiod_set_value(GPIO_data.my_gpio , 0);
         goto gpio_out;
 
         gpio_dev_err:
@@ -372,7 +342,25 @@ static int __init my_driver_init(void)
             device_destroy(GPIO_data.my_class, GPIO_data.dev_num);
             unregister_chrdev_region(GPIO_data.dev_num, 1);
         gpio_out:
-            /*nothing to be done*/
+        /* do nothing -> leave */
+    }
+
+    /* GPIO ON <<<< OLD METHOD GPIO HANDLING */  
+    if(gpio_is_valid(539) == false)
+    {
+        pr_info("PIN 27 invalid\n");
+    }else
+    {
+        if(gpio_request(539, "gpio_LED") < 0)
+        {
+            /*pr_info("PIN 27 cannot be used\n");*/
+        }else
+        {
+            pr_info("Setting gpio 27 <ON> (RPI 539)\n");
+            gpio_direction_output(539, 0);
+            gpio_set_value(539, 1);
+            gpio_free(539); 
+        }
     }
 
     printk("Module inserted OK\n");
@@ -393,7 +381,7 @@ static int __init my_driver_init(void)
         return ret;
 };
 
-static void __exit my_driver_exit(void)
+ void __exit my_driver_exit(void)
 {
     int i;
     for(i = 0; i < NO_OF_DEV; i++)
@@ -416,6 +404,25 @@ static void __exit my_driver_exit(void)
     /* destroy class and CHAR devs */
     class_destroy(my_data.my_class);
     unregister_chrdev_region(my_data.dev_num, NO_OF_DEV);
+
+    /* GPIO OFF <<<< OLD METHOD GPIO HANDLING */   
+    if(gpio_is_valid(539) == false)
+    {
+        pr_info("PIN 27 invalid\n");
+    }else
+    {
+        if(gpio_request(539, "gpio_LED") < 0)
+        {
+            /*pr_info("PIN 27 cannot be used\n");*/
+            
+        }else
+        {
+            pr_info("Setting gpio 27 <OFF> (RPI 539)\n");
+            gpio_direction_output(539, 0);
+            gpio_set_value(539, 0);
+            gpio_free(539);
+        }
+    }
 
     printk("Module removed OK\n");
 };

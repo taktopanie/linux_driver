@@ -5,27 +5,37 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
-#define WR_VALUE _IOW('a','a',int32_t*)
-#define RD_VALUE _IOR('a','b',int32_t*)
+#define WR_VALUE _IOW(0x10, 0, unsigned long *)
+#define RD_VALUE _IOR(0x10, 1, unsigned long *)
+#define LED_ON _IO(0x10, 2)
+#define LED_OFF _IO(0x10, 3)
 
 int main (void)
 {
     int fd;
-    int32_t numb = 32;
-    int32_t value;
+    unsigned long  numb = 32;
+    unsigned long  value;
 
-    if(fd = open("/dev/my_dev-0", O_RDWR) < 0)
+    fd = open("/dev/my_gpio-0", O_RDWR);
+
+    if(fd < 0)
     {
         printf("Couldnt open /dev/ device file\n");
         return 1;
     }
 
-    printf("Write Value to Driver\n");
-    ioctl(fd, WR_VALUE, (int32_t*) &numb); 
- 
-    printf("Reading Value from Driver\n");
-    ioctl(fd, RD_VALUE, (int32_t*) &value);
+    ioctl(fd, LED_ON, (unsigned long *) &numb); 
+    printf("LED turned ON\n");
 
-    close(fd);
+    sleep(2);
+    
+    ioctl(fd, LED_OFF, (unsigned long *) &value);
+    printf("LED turned OFF\n");
+
+    if(close(fd) < 0)
+    {
+        printf("Close FAILED\n");
+    }
+ 
     return 0;
 }
