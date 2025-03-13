@@ -1,0 +1,25 @@
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/leds/common.h>
+/ {
+        
+        my_gpios{
+                compatible = "org,taktopanie_gpios";
+                pinctrl-names = "default";
+                pinctrl-0 = <&my_irq_button>;
+                status = "okay";
+
+                irq_gpio{
+                        label = "my_gpio_27";
+                        RPi-gpio = <&gpio 27 GPIO_ACTIVE_HIGH>;
+                };
+        };
+};
+
+&gpio {
+        my_irq_button: my_irq_button {
+                brcm,pins = <27>;
+                brcm,function = <0x00>;
+        };
+};
+
+
