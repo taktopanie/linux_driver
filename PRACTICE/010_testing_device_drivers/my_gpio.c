@@ -61,7 +61,6 @@ ssize_t my_dev_read (struct file *, char __user *, size_t, loff_t *);
 ssize_t my_dev_write (struct file *, const char __user *, size_t, loff_t *);
 int my_dev_open (struct inode *, struct file *);
 int my_dev_release (struct inode *, struct file *);
-long my_dev_ioctl (struct file * filp, unsigned int fd, unsigned long cmd);
 
 loff_t my_dev_lseek (struct file *filp, loff_t l_pos, int whence)
 {
@@ -197,27 +196,18 @@ int my_dev_release (struct inode *inode, struct file *filp)
     return 0;
 }
 
-long my_dev_ioctl (struct file * filp, unsigned int fd, unsigned long cmd)
-{
-    pr_info("Device ioctl called with : %ld cmd\n", cmd);
-    return 0;
-}
-
 struct file_operations f_ops = 
 {
     .llseek = my_dev_lseek,
     .read = my_dev_read,
     .write = my_dev_write,
     .open = my_dev_open,
-    .release = my_dev_release,
-    .unlocked_ioctl = my_dev_ioctl,
-    .compat_ioctl = my_dev_ioctl
+    .release = my_dev_release
 };
 
 struct file_operations gpio_ops = 
 {
     /* TODO: ioctl will be done */
-    .compat_ioctl = my_dev_ioctl
 };
 
 static int __init my_driver_init(void)

@@ -1,5 +1,5 @@
 ARCH=arm
-CROSS_COMPILE=arm-linux-gnueabihf-
+CROSS_COMPILE=/home/maciej/Desktop/moje/programming/Linux/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-
 
 app: lcd_app.o lcd.o gpio.o lcd_app.elf
 
