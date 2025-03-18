@@ -1,4 +1,4 @@
-obj-m := my_irq.o 
+obj-m := my_irq_OLD.o 
 
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-

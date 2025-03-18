@@ -3,15 +3,19 @@
 / {
         
         my_gpios{
-                compatible = "org,taktopanie_gpios";
+                compatible = "org,taktopanie_irq";
                 pinctrl-names = "default";
                 pinctrl-0 = <&my_irq_button>;
                 status = "okay";
 
+                interrupt-parent = <&gpio>;
+                interrupts = <27 0x1>;
+
                 irq_gpio{
                         label = "my_gpio_27";
-                        RPi-gpio = <&gpio 27 GPIO_ACTIVE_HIGH>;
+                        RPi-gpio = <&gpio 27 GPIO_ACTIVE_HIGH>; 
                 };
+                
         };
 };
 
