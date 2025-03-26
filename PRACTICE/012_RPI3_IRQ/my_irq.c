@@ -41,6 +41,24 @@ int gpio_sysfs_probe(struct platform_device *pdev)
 	//count the child nodes
 	gpio_drv_data.total_devices = of_get_child_count(parent);
 
+	/* request for the IRQ 
+	
+		IF in dtsi we have: 
+		        interrupt-parent = <&gpio>;		<< IRQ controller
+                interrupts = <27 0x1>;			<< (27 = 27 GPIO pin | 0x1 = low-to-high edge triggered 
+				[check /Documentation/devicetree/bindings/pinctrl/brcm,bcm2835-gpio.txt]
+
+		we can capture the IRQ from dt by "devm_request_irq"
+			platform_get_irq(dev, num)
+				@dev = platform_device
+				@num = IRQ number index 
+
+				example:
+				interrupts = <27 0x1 28 0x2>;
+				num[0] = (27 0x1)				<< (27 = 27 GPIO pin | 0x1 = low-to-high edge triggered 
+				num[1] = (28 0x2)				<< (28 = 28 GPIO pin | 0x2 = high-to-low edge triggered 
+
+	*/
 	ret = devm_request_irq(dev, platform_get_irq(pdev, 0),
 			       my_irq, IRQF_NO_SUSPEND, dev_name(dev),
 			       pdev);
