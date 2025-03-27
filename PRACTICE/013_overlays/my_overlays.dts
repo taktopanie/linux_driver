@@ -11,6 +11,7 @@
             };
 
         };
+        
     fragment@1 {
         target = <&pddev2>;
         __overlay__ {
@@ -18,10 +19,19 @@
             };
 
         };
+
     fragment@2 {
         target = <&pddev3>;
         __overlay__ {
             status = "disabled";
+            };
+
+        };
+
+    fragment@3 {
+        target = <&hd44780>;
+        __overlay__ {
+            status = "okay";
             };
 
         };

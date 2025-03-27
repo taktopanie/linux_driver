@@ -35,4 +35,61 @@
                 org,perm = <0x11>;
         };
 
+        my_gpios: my_gpios {
+                compatible = "org,taktopanie_gpios";
+                pinctrl-names = "default";
+                pinctrl-0 = <&my_testing_led>;
+                status = "disabled";
+
+                gpio2{
+                        label = "my_gpio_17";
+                        RPi-gpio = <&gpio 17 GPIO_ACTIVE_HIGH>;
+ 
+                };
+        };
+
+        hd44780: hd44780 {
+                compatible = "hit,hd44780";
+                pinctrl-names = "default";
+                pinctrl-0 = <&my_lcd_gpio>;
+                status = "disabled";
+                display-height-chars = <2>;
+                display-width-chars  = <16>;
+                data-gpios = <&gpio 1 0>,
+                         <&gpio 7 0>,
+                         <&gpio 8 0>,
+                         <&gpio 25 0>;
+                enable-gpios = <&gpio 16 0>;
+                rs-gpios = <&gpio 21 0>;
+                rw-gpios = <&gpio 20 0>;
+                backlight-gpios = <&gpio 12 0>;
+        };
+
+        my_leds: my_leds {
+                compatible = "gpio-leds";
+                pinctrl-names = "default";
+                pinctrl-0 = <&my_led_gpio>;
+                status = "disabled";
+                led-gpio {
+                        label = "gpio_LED";
+                        gpios = <&gpio 27 GPIO_ACTIVE_HIGH>;
+                        linux,default-trigger = "timer";
+                        led-pattern = <1000 1000>;
+                };
+        };
+};
+
+&gpio {
+        my_lcd_gpio: lcd_gpio {
+                brcm,pins = <1 7 8 12 16 20 21 25>;
+                brcm,function = <0x01>;
+        }; 
+        my_led_gpio: my_led {
+                brcm,pins = <27>;
+                brcm,function = <0x01>;
+        };
+        my_testing_led: my_testing_led {
+                brcm,pins = <17>;
+                brcm,function = <0x01>;
+        };
 };
