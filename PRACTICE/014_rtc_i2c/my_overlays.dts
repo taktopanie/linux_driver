@@ -1,0 +1,14 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2835";
+
+    fragment@0 {
+        target = <&hd44780>;
+        __overlay__ {
+            status = "okay";
+            };
+
+        };
+};
