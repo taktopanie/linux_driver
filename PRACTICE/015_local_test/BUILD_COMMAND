@@ -1,0 +1,5 @@
+make -C /lib/modules/5.15.0-126-generic/build/ M=$PWD clean
+make -C /lib/modules/5.15.0-126-generic/build/ M=$PWD
+
+#RPI MODULE CROSS COMPILE
+ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- make -C ../rpi_kernel/linux/ M=$PWD clean
