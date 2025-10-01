@@ -2,10 +2,45 @@
 #include <linux/device.h>
 #include<linux/device/driver.h>
 #include <linux/platform_device.h>
+#include "common.h"
+#include <linux/fs.h>
+
+#undef pr_fmt
+#define pr_fmt(fmt) "%s : " fmt,__func__
+
+dev_t cdev;
 
 int testo_probe (struct platform_device *dev)
 {
-	pr_err("PROBE!!!\n");
+
+	struct my_device_data* plt_data;
+	
+	int res;
+
+	plt_data = (struct my_device_data *)dev_get_platdata(&dev->dev);
+
+	res = register_chrdev_region(cdev,1, "maciej_c_dev");
+
+
+	if(!plt_data)
+	{
+		pr_alert("no platform data provided...\n");
+		return -EINVAL;
+	}
+
+	dev_set_drvdata(&dev->dev, plt_data);
+
+	pr_info("Device serial number = %d\n",plt_data->serial_number);
+	pr_info("Device text = %s\n", plt_data->text);
+
+	pr_err("PROBE DONE!!!\n");
+	return 0;
+}
+
+int testo_remove(struct platform_device * dev)
+{
+	struct my_device_data* plt_data = (struct my_device_data*)dev->dev.driver_data;
+	pr_info("Device %d, will be removed...\n",plt_data->serial_number);
 	return 0;
 }
 
