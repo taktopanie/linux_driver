@@ -1,0 +1,11 @@
+Compile the dts file using dtc:
+dtc -@ -I dts -O dtb -o something.dtbo something.dts
+
+Put it in /boot/overlays:
+sudo cp something.dtbo /boot/overlays/
+
+
+Add a line to /boot/config.txt:
+dtoverlay=something
+
+Reboot.
