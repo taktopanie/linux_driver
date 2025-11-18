@@ -1,4 +1,4 @@
-obj-m := my_uart.o
+obj-m := my_miniuart.o
 
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-

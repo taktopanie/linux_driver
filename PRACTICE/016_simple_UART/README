@@ -9,3 +9,17 @@ Add a line to /boot/config.txt:
 dtoverlay=something
 
 Reboot.
+
+
+my_miniuart.c:
+    Musisz włączyć mini UART w config.txt RPi:
+
+    enable_uart=1
+    core_freq=250
+
+    Adres 0x3F215040 dotyczy Raspberry Pi 3 (Peripherals base 0x3F000000). Na Pi 4 adres może być inny (0xFE215040).
+
+    Ten driver działa w trybie polling.
+
+    sudo mknod /dev/rpi_mini_uart0 c 240 0
+    sudo chmod 666 /dev/rpi_mini_uart0
