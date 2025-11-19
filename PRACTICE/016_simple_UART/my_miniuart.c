@@ -17,6 +17,18 @@ static int major;
 #define AUX_MU_LSR_DATA   (1 << 0)
 #define AUX_MU_LSR_SPACE  (1 << 5)
 
+#define LED_ON _IO(0x10, 2)
+#define LED_OFF _IO(0x10, 3)
+
+//#define DEBUG_PRINT
+
+void UART_hw_write_char(char data_to_send)
+{
+    while (!(readl(uart_base + AUX_MU_LSR_REG) & AUX_MU_LSR_SPACE))
+        cpu_relax();
+    writel(data_to_send, uart_base + AUX_MU_IO_REG);
+}
+
 static int rpi_uart_open(struct inode *inode, struct file *file)
 {
     pr_info("rpi_mini_uart: device opened\n");
@@ -33,23 +45,29 @@ static ssize_t rpi_uart_read(struct file *file, char __user *buf, size_t count, 
 {
     size_t i;
     char c;
+    uint32_t data_size = 0;
 
     for (i = 0; i < count; i++) {
         uint8_t tmp_timer = 0;
-        while ((!(readl(uart_base + AUX_MU_LSR_REG) & AUX_MU_LSR_DATA)) && tmp_timer < 250 )
+        while ((!(readl(uart_base + AUX_MU_LSR_REG) & AUX_MU_LSR_DATA)) && tmp_timer < 50 )
             {
                 tmp_timer++;
                 cpu_relax();
             }
-        if(tmp_timer == 250)
+
+        if(tmp_timer == 50)
         {
-            return -EFAULT;
+            break;
         }
+
         c = readl(uart_base + AUX_MU_IO_REG) & 0xFF;
+        data_size++;
+
         if (copy_to_user(buf + i, &c, 1))
             return -EFAULT;
+
     }
-    return count;
+    return data_size;
 }
 
 static ssize_t rpi_uart_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
@@ -61,12 +79,55 @@ static ssize_t rpi_uart_write(struct file *file, const char __user *buf, size_t 
         if (copy_from_user(&c, buf + i, 1))
             return -EFAULT;
 
-        while (!(readl(uart_base + AUX_MU_LSR_REG) & AUX_MU_LSR_SPACE))
-            cpu_relax();
-
-        writel(c, uart_base + AUX_MU_IO_REG);
+        UART_hw_write_char(c);
     }
     return count;
+}
+
+long my_dev_ioctl (struct file *filp, unsigned int cmd, unsigned long arg)
+{
+#ifdef DEBUG_PRINT
+    pr_info("IOCTL CALLED\n");
+#endif
+    char LED_ON_CMD[] = "#1q\n";
+    char LED_OFF_CMD[] = "#0q\n";
+
+    int i = 0;
+    switch(cmd) 
+    {
+        
+        case LED_ON:
+
+            for(i = 0; i < strlen(LED_ON_CMD); i++)
+            {
+                UART_hw_write_char(LED_ON_CMD[i]);
+            }
+
+#ifdef DEBUG_PRINT
+            pr_info("LED_ON");
+#endif
+            break;
+
+        case LED_OFF:
+
+            for(i = 0; i < strlen(LED_OFF_CMD); i++)
+            {
+                UART_hw_write_char(LED_OFF_CMD[i]);
+            }
+#ifdef DEBUG_PRINT
+            pr_info("LED_OFF");
+#endif
+            break;
+
+        default:
+#ifdef DEBUG_PRINT
+                pr_info("Default\n");
+#endif
+                break;
+    }
+
+    return 0;
+
 }
 
 static struct file_operations rpi_uart_fops = {
@@ -75,6 +136,7 @@ static struct file_operations rpi_uart_fops = {
     .release = rpi_uart_release,
     .read = rpi_uart_read,
     .write = rpi_uart_write,
+    .unlocked_ioctl = my_dev_ioctl,
 };
 
 static int __init rpi_uart_init(void)
